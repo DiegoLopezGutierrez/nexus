@@ -59,15 +59,23 @@ ScintillationGenerator::~ScintillationGenerator()
 void ScintillationGenerator::GeneratePrimaryVertex(G4Event* event)
 {
   G4ParticleDefinition* particle_definition = G4OpticalPhoton::Definition();
-  // Generate an initial position for the particle using the geometry and set time to 0.
-  G4ThreeVector position = geom_->GenerateVertex(region_);
+  G4ThreeVector position;
   G4double time = 0.;
+  G4VPhysicalVolume* vol;
+  G4Material* mat;
 
-  // Energy is sampled from integral (like it is done in G4Scintillation)
+  while (true){
+    // Generate an initial position for the particle using the geometry and set time to 0.
+    position = geom_->GenerateVertex(region_);
 
-  G4VPhysicalVolume* vol =
-    geom_navigator_->LocateGlobalPointAndSetup(position, 0, false);
-  G4Material* mat = vol->GetLogicalVolume()->GetMaterial();
+    // Energy is sampled from integral (like it is done in G4Scintillation)
+    vol = geom_navigator_->LocateGlobalPointAndSetup(position, 0, false);
+    mat = vol->GetLogicalVolume()->GetMaterial();
+    
+    if (mat->GetName() == "GXe")
+      break;
+  }
+
   G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
 
   if (!mpt) {
